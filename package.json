@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "This is a demo app for simulating and testing real-time, event-driven features powered by Socket.IO. It includes functionality like end-to-end encrypted private chatting and live classroom interactions.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -1,6 +1,18 @@
-## Broadcast
+## RealTimeHub
 
-This is a demo client app Web socket, event driven application to simulate real world event driven features such as e2e private chatting and a classroom.
+This is a demo app for simulating and testing real-time, event-driven features powered by Socket.IO. It includes functionality like end-to-end encrypted private chatting and live classroom interactions.
+
+## Goal
+
+Would love for this project to become a collection of real-world implementations of real-time features — empowering beginners to learn freely and confidently.
+
+## Warning
+
+Please bear with me, I know the document is ugly, kinda busy 😄...
+
+# CONTRIBUTIONS
+
+You are free to fork, test and modify the code.
 
 ### CHAT Features
 
@@ -19,15 +31,15 @@ This is a demo client app Web socket, event driven application to simulate real 
 - left classroom broadcast
 - classroom broadcast
 
+## NOTE
+
+data value specified as {} means you should pass an object of any key-value pair you set.
+
 to use the socket io pass auth option below to the io options
 
 {
 token: "logged-in-access-token"
 }
-
-## NOTE
-
-Note: data value specified as {} means you should pass an object of any key-value pair you set.
 
 ## ERROR HANDLING
 
