@@ -16,7 +16,7 @@ const ChatRoom = ({ socketApi: { socket }, style, currentUser, otherUser }) => {
 
   const stateRef = useRef({ isTyping: false });
 
-  const conversationId = "6860a5c36b14526b81255ce7";
+  const conversationId = "";
 
   const decryptText = useCallback(
     async (msg) => {
@@ -35,9 +35,11 @@ const ChatRoom = ({ socketApi: { socket }, style, currentUser, otherUser }) => {
   useEffect(() => {
     const setup = async () => {
       try {
+        if (!conversationId) return;
+
         const messages = [];
 
-        const data = await getMessages(currentUser.id, conversationId);
+        const data = (await getMessages(currentUser.id, conversationId)) || [];
 
         for (const msg of data) {
           messages.push({
@@ -105,8 +107,10 @@ const ChatRoom = ({ socketApi: { socket }, style, currentUser, otherUser }) => {
     }
   }, [socket, decryptText]);
 
+  useEffect(() => {}, []);
+
   const sendChatMessage = async () => {
-    const tempId = new Date().getTime();
+    const tempId = new Date().getTime(); // uuuid
 
     const receiverEncryptedMessage = await encryptMessage(
       otherUser.encryptedData.publicKey,
@@ -120,9 +124,9 @@ const ChatRoom = ({ socketApi: { socket }, style, currentUser, otherUser }) => {
 
     const message = {
       conversationId,
-      tempId,
-      sender: currentUser,
-      receiver: otherUser,
+      tempId, // client id
+      sender: currentUser, // {role: string, id: string}
+      receiver: otherUser, // {role: string, id: string}
       recipients: {
         [currentUser.id]: senderEncryptedMessage,
         [otherUser.id]: receiverEncryptedMessage,
