@@ -22,6 +22,8 @@ const loginUser = async (payload) => {
 
   const data = await res.json();
 
+  if (!data.success) throw data;
+
   return {
     ...data.data.user,
     accessToken: data.data.accessToken,
@@ -34,9 +36,7 @@ const getMessages = async (userId, conversationId) => {
     {
       method: "POST",
       headers: {
-        authorization: `Bearer ${
-          getStorage(USER_KEY)?.currentUser?.accessToken
-        }`,
+        authorization: `Bearer ${getStorage(USER_KEY)?.accessToken}`,
       },
     }
   );
@@ -56,4 +56,30 @@ const getUser = async (payload) => {
   return data.data;
 };
 
-export { registerUser, loginUser, getMessages, getUser };
+const getUsers = async () => {
+  const res = await fetch(`${API_URL}/dev/users`);
+  const data = await res.json();
+
+  return data.data;
+};
+
+const getUserConversations = async (userId) => {
+  const res = await fetch(`${API_URL}/chat/user-conversations/${userId}`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${getStorage(USER_KEY)?.accessToken}`,
+    },
+  });
+  const data = await res.json();
+
+  return data.data;
+};
+
+export {
+  registerUser,
+  loginUser,
+  getMessages,
+  getUser,
+  getUsers,
+  getUserConversations,
+};

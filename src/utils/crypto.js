@@ -92,6 +92,8 @@ const exportPublicKey = async (publicKey) => {
 };
 
 const encryptMessage = async (publicKeyBase64, message) => {
+  if (!message) return "";
+
   const keyBuffer = Uint8Array.from(atob(publicKeyBase64), (c) =>
     c.charCodeAt(0)
   );
@@ -112,6 +114,7 @@ const encryptMessage = async (publicKeyBase64, message) => {
 };
 
 const decryptMessage = async (privateKey, encryptedMessage) => {
+  if (!encryptedMessage) return "";
   const buffer = Uint8Array.from(atob(encryptedMessage), (c) =>
     c.charCodeAt(0)
   );
@@ -141,7 +144,21 @@ const importPrivateKey = async (base64Key) => {
   );
 };
 
+const decryptText = async (currentUser, msg) => {
+  if (!msg) return "";
+
+  const privateKey = await importPrivateKey(currentUser.privateKey);
+
+  const decrypted = await decryptMessage(
+    privateKey,
+    msg.recipients[currentUser.id]
+  );
+
+  return decrypted;
+};
+
 export {
+  decryptText,
   generateKeyPair,
   encryptPrivateKey,
   decryptPrivateKey,

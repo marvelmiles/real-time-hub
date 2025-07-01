@@ -1,16 +1,12 @@
 import { useSocket } from "./hooks/useSocket";
-import ChatRoom from "./components/ChatRoom";
 import Classroom from "./components/Classroom";
 import { useEffect, useMemo, useState } from "react";
-import Auth, { USER_KEY } from "./components/Auth";
-import { getStorage } from "./utils";
+import Auth from "./components/Auth";
+import { Route, Routes } from "react-router-dom";
+import Chats from "./components/Chats";
 
 function App() {
-  const [users, setUsers] = useState(null);
-
-  const currentUser = users?.currentUser;
-
-  const otherUser = users?.otherUser;
+  const [currentUser, setCurrentUser] = useState(null);
 
   const socketOpts = useMemo(
     () => ({
@@ -29,57 +25,51 @@ function App() {
   const { socket, connected } = socketApi;
 
   useEffect(() => {
-    setUsers(getStorage(USER_KEY) || null);
-  }, []);
-
-  useEffect(() => {
     if (socket) {
       socket.on("error-response", (error) => {
         console.log(error);
       });
 
       socket.on("connect_error", (err) => {
-        console.log(
-          "Connection blocked:",
-          err.message,
-          err.status,
-          err.response,
-          err.data
-        );
+        console.log("Socket Connection blocked:", err.message, err.data);
       });
     }
   }, [socket]);
 
   const props = {
-    setUsers,
+    setCurrentUser,
     socketApi,
     currentUser,
-    otherUser,
     style: { margin: "15px 0px" },
   };
 
   return (
     <div>
       <h1>React + Socket.IO Demo</h1>
+      <h2>Welcome to Real time Hub</h2>
       <h3>
         {connected
-          ? `Server connected successfully! ${connected}`
+          ? `Socket connected to server successfully! ${connected}`
           : currentUser
-          ? "Awaiting connection..."
+          ? "Socket not connected to server"
           : "Not Signed in"}
       </h3>
+      {currentUser ? (
+        <h3>
+          Signed In as {currentUser.role} {currentUser.firstname}{" "}
+          {currentUser.lastname}
+        </h3>
+      ) : null}
 
       <Auth {...props} />
 
       {currentUser ? (
         <>
-          <h3>
-            Signed In as {currentUser.role} {currentUser.firstname}{" "}
-            {currentUser.lastname}
-          </h3>
-          <ChatRoom {...props} />
-
-          <Classroom {...props} />
+          <br /> <br />
+          <Routes>
+            <Route path="/chats/:userId" element={<Chats {...props} />} />
+            <Route path="/classroom" element={<Classroom />} />
+          </Routes>
         </>
       ) : null}
     </div>
