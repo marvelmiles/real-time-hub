@@ -223,14 +223,44 @@ const ChatRoom = ({
             {fetchingMessages ? (
               <h3>Fetching messages, please wait...</h3>
             ) : chatMessages.length ? (
-              chatMessages.map((message, i) => (
-                <div key={i} style={{ display: "flex", gap: "4px" }}>
-                  <p>{message.text}</p>
-                  <p>{message.createdAt ? "saved" : "pending"}</p>
-                  {message.deliveredAt ? <p>delivered</p> : null}
-                  {message.readAt ? <p>Read</p> : null}
-                </div>
-              ))
+              <div
+                style={{
+                  maxHeight: "200px",
+                  overflow: "auto",
+                  maxWidth: "100%",
+                  width: "100%",
+                }}
+              >
+                {chatMessages.map((message, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      border: `1px solid ${
+                        message.sender.id === currentUser.id ? "green" : "black"
+                      }`,
+                      margin: "12px 0px",
+                      padding: "8px",
+                      maxHeight: "max-content",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    <div
+                      style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}
+                    >
+                      <p>{message.text}</p>
+                      <p>{message.createdAt ? "saved" : "pending"}</p>
+                      {message.deliveredAt ? <p>delivered</p> : null}
+                      {message.readAt ? <p>Read</p> : null}
+                    </div>
+                    <div>
+                      Sent by:{" "}
+                      {message.sender.id === currentUser.id
+                        ? "You"
+                        : `${message.sender.firstname} ${message.sender.lastname}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <h3>You have no conversation together.</h3>
             )}

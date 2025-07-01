@@ -84,7 +84,13 @@ const Chats = (props) => {
               <div style={{ padding: "0px 8px" }}>
                 <h4>Conversations</h4>
               </div>
-              <div style={{ display: "grid" }}>
+              <div
+                style={{
+                  display: "grid",
+                  maxHeight: "200px",
+                  overflow: "auto",
+                }}
+              >
                 {chats.map((chat, i) => {
                   const user = chat.participants[userId];
                   return (
