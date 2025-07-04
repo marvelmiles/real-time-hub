@@ -157,6 +157,103 @@ const decryptText = async (currentUser, msg) => {
   return decrypted;
 };
 
+export const encryptFile = async (file, recipientPublicKeyBase64) => {
+  // encrypt file is based on a hybrid encryption scheme
+
+  const fileBuffer = await file.arrayBuffer();
+
+  const aesKey = await crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization Vector
+  const encryptedContent = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    aesKey,
+    fileBuffer
+  );
+
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+  const base64AesKey = btoa(String.fromCharCode(...new Uint8Array(rawAesKey)));
+
+  const encryptedAesKey = await encryptMessage(
+    recipientPublicKeyBase64,
+    base64AesKey
+  );
+
+  const encryptedFileBase64 = btoa(
+    String.fromCharCode(...new Uint8Array(encryptedContent))
+  );
+  const ivBase64 = btoa(String.fromCharCode(...iv));
+
+  return {
+    encryptedFile: encryptedFileBase64,
+    encryptedKey: encryptedAesKey,
+    iv: ivBase64,
+  };
+};
+
+export const decryptFile = async (fileMessage, privateKeyBase64) => {
+  const privateKey = await importPrivateKey(privateKeyBase64);
+
+  const base64AesKey = await decryptMessage(
+    privateKey,
+    fileMessage.encryptedKey
+  );
+
+  const aesKeyBuffer = Uint8Array.from(atob(base64AesKey), (c) =>
+    c.charCodeAt(0)
+  ).buffer;
+
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    aesKeyBuffer,
+    { name: "AES-GCM" },
+    false,
+    ["decrypt"]
+  );
+
+  const ivBytes = Uint8Array.from(atob(fileMessage.iv), (c) => c.charCodeAt(0));
+
+  const encryptedFileBuffer = Uint8Array.from(
+    atob(fileMessage.encryptedFile),
+    (c) => c.charCodeAt(0)
+  ).buffer;
+
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: ivBytes },
+    aesKey,
+    encryptedFileBuffer
+  );
+
+  return new Uint8Array(decryptedBuffer);
+};
+
+export const decryptRecipientFile = async (
+  receiver,
+  fileMessage,
+  type = "blob"
+) => {
+  const decrypted = await decryptFile(
+    fileMessage.recipients[receiver.id],
+    receiver.privateKey
+  );
+
+  const blob = new Blob([decrypted], { type: fileMessage.mimetype });
+
+  const file =
+    type === "blob"
+      ? blob
+      : new File([blob], `${fileMessage.name}.${fileMessage.extention}`, {
+          type: fileMessage.mimetype,
+          lastModified: Date.now(),
+        });
+
+  return file;
+};
+
 export {
   decryptText,
   generateKeyPair,

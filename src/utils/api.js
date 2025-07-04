@@ -46,7 +46,7 @@ const getMessages = async (userId, conversationId) => {
 };
 
 const getUser = async (payload) => {
-  const res = await fetch(`${API_URL}/dev/get-user`, {
+  const res = await fetch(`${API_URL}/get-user`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -57,7 +57,7 @@ const getUser = async (payload) => {
 };
 
 const getUsers = async () => {
-  const res = await fetch(`${API_URL}/dev/users`);
+  const res = await fetch(`${API_URL}/users`);
   const data = await res.json();
 
   return data.data;

@@ -4,6 +4,7 @@ import { decryptText, encryptMessage } from "../utils/crypto";
 import { getMessages } from "../utils/api";
 import { useSearchParams } from "react-router-dom";
 import { CONVERSATION_PARAM_KEY } from "./Chats";
+import FileUpload from "./FileUpload";
 
 const ChatRoom = ({
   socketApi: { socket },
@@ -16,11 +17,15 @@ const ChatRoom = ({
 
   const [chatMessages, setChatMessages] = useState([]);
 
+  const [encryptedFiles, setEncryptedFiles] = useState([]);
+
   const [typing, setTyping] = useState(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [fetchingMessages, setFetchingMessages] = useState(true);
+
+  const [resetFileUpload, setResetFileUpload] = useState(false);
 
   const stateRef = useRef({ isTyping: false });
 
@@ -146,7 +151,10 @@ const ChatRoom = ({
   }, [socket, currentUser, otherUser.id, conversationId, updateConversationId]);
 
   const sendChatMessage = async () => {
-    if (!chatMessage || fetchingMessages) return;
+    if (fetchingMessages || (!chatMessage && !encryptedFiles.length)) return;
+
+    setResetFileUpload(false);
+
     // client temp id to track pending message.
     const tempId = new Date().getTime(); // use uuid package for a more unique id
 
@@ -165,6 +173,7 @@ const ChatRoom = ({
       tempId,
       sender: { role: currentUser.role, id: currentUser.id },
       receiver: { role: otherUser.role, id: otherUser.id },
+      files: encryptedFiles,
       recipients: {
         [currentUser.id]: senderEncryptedMessage,
         [otherUser.id]: receiverEncryptedMessage,
@@ -178,6 +187,8 @@ const ChatRoom = ({
     socket.emit("send-chat-message", message);
 
     setChatMessage("");
+    setEncryptedFiles([]);
+    setResetFileUpload(true);
   };
 
   const stopTyping = useRef(
@@ -271,6 +282,12 @@ const ChatRoom = ({
               value={chatMessage}
               onChange={handleTyping}
               placeholder="Send message"
+            />
+            <FileUpload
+              reset={resetFileUpload}
+              receiver={otherUser}
+              sender={currentUser}
+              onUploads={setEncryptedFiles}
             />
             <button onClick={sendChatMessage}>Send message</button>
           </>
